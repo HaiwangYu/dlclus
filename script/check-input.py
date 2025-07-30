@@ -42,10 +42,36 @@ class EnhancedEventDisplay:
         # Apply initial labeling
         self.update_labels()
         
+        # Extract truth points and labels for easier access
+        self.extract_truth_data()
+        
         # Setup the figure and plots
         self.fig = plt.figure(figsize=(18, 8))
         self.setup_plot()
         
+    def extract_truth_data(self):
+        """Extract truth data points and labels from the truth file"""
+        self.tru_points = []
+        self.tru_labels = []
+        
+        # Check if the truth data has the expected format
+        if isinstance(self.tru_data, dict) and 'x' in self.tru_data and 'y' in self.tru_data and 'z' in self.tru_data:
+            # Get coordinates from the flat structure
+            x = np.array(self.tru_data.get('x', []))*10.
+            y = np.array(self.tru_data.get('y', []))*10.
+            z = np.array(self.tru_data.get('z', []))*10.
+            q = np.array(self.tru_data.get('q', []))
+            
+            # Create points array if coordinates have consistent lengths
+            if len(x) == len(y) == len(z):
+                self.tru_points = np.column_stack((x, y, z))
+                self.tru_labels = q if len(q) == len(x) else np.zeros(len(x))
+                print(f"Extracted {len(self.tru_points)} truth points")
+            else:
+                print("Warning: Truth data coordinates have inconsistent lengths")
+        else:
+            print("Warning: Truth data does not have expected format")
+    
     def update_labels(self):
         """Update labels based on current distance cut"""
         try:
@@ -153,35 +179,30 @@ class EnhancedEventDisplay:
         self.ax_tru.clear()
         self.ax_labeled.clear()
         
-        # Get colors for labels
-        cmap = plt.cm.viridis
-        norm = plt.Normalize(vmin=min(self.labels), vmax=max(self.labels))
-        colors = cmap(norm(self.labels))
-        
         # Plot differently based on view mode
         if self.view_mode == '3d':
             # Panel 1: Reconstruction data
             self.ax_rec.scatter(self.x, self.y, self.z, s=2, alpha=0.7)
             
-            # Panel 2: Truth data - plot points from tru_data if available
-            if 'particles' in self.tru_data:
-                # Extract truth particle positions if available
-                tru_points = []
-                for particle in self.tru_data['particles']:
-                    if 'positions' in particle:
-                        for pos in particle['positions']:
-                            tru_points.append([pos.get('x', 0), pos.get('y', 0), pos.get('z', 0)])
-                
-                if tru_points:
-                    tru_points = np.array(tru_points)
-                    self.ax_tru.scatter(tru_points[:, 0], tru_points[:, 1], tru_points[:, 2], 
-                                       s=2, c='red', alpha=0.7)
+            # Panel 2: Truth data
+            if len(self.tru_points) > 0:
+                # Use truth label for coloring if available
+                if len(self.tru_labels) == len(self.tru_points):
+                    self.ax_tru.scatter(self.tru_points[:, 0], self.tru_points[:, 1], 
+                                        self.tru_points[:, 2], s=2, c=self.tru_labels,
+                                        cmap='plasma', alpha=0.7)
+                else:
+                    self.ax_tru.scatter(self.tru_points[:, 0], self.tru_points[:, 1], 
+                                        self.tru_points[:, 2], s=2, c='red', alpha=0.7)
             
-            # Panel 3: Labeled reconstruction data
-            scatter = self.ax_labeled.scatter(self.x, self.y, self.z, s=2, c=self.labels, 
-                                             cmap='viridis', alpha=0.7)
-            cbar = plt.colorbar(scatter, ax=self.ax_labeled)
-            cbar.set_label('Label')
+            # Panel 3: Combined truth and reconstruction data
+            # Plot reconstruction points in blue
+            self.ax_labeled.scatter(self.x, self.y, self.z, s=2, c='blue', alpha=0.7, label='Reconstruction')
+            # Plot truth points in red if available
+            if len(self.tru_points) > 0:
+                self.ax_labeled.scatter(self.tru_points[:, 0], self.tru_points[:, 1], 
+                                     self.tru_points[:, 2], s=2, c='red', alpha=0.7, label='Truth')
+            self.ax_labeled.legend(loc='upper right')
             
             # Set labels for all axes
             for ax in [self.ax_rec, self.ax_tru, self.ax_labeled]:
@@ -195,20 +216,20 @@ class EnhancedEventDisplay:
                 self.ax_rec.scatter(self.x, self.y, s=2, alpha=0.7)
                 
                 # Panel 2: Truth data
-                if 'particles' in self.tru_data:
-                    tru_points = []
-                    for particle in self.tru_data['particles']:
-                        if 'positions' in particle:
-                            for pos in particle['positions']:
-                                tru_points.append([pos.get('x', 0), pos.get('y', 0), pos.get('z', 0)])
-                    
-                    if tru_points:
-                        tru_points = np.array(tru_points)
-                        self.ax_tru.scatter(tru_points[:, 0], tru_points[:, 1], s=2, c='red', alpha=0.7)
+                if len(self.tru_points) > 0:
+                    if len(self.tru_labels) == len(self.tru_points):
+                        self.ax_tru.scatter(self.tru_points[:, 0], self.tru_points[:, 1], 
+                                            s=2, c=self.tru_labels, cmap='plasma', alpha=0.7)
+                    else:
+                        self.ax_tru.scatter(self.tru_points[:, 0], self.tru_points[:, 1], 
+                                            s=2, c='red', alpha=0.7)
                 
-                # Panel 3: Labeled reconstruction data
-                scatter = self.ax_labeled.scatter(self.x, self.y, s=2, c=self.labels, 
-                                               cmap='viridis', alpha=0.7)
+                # Panel 3: Combined truth and reconstruction data
+                self.ax_labeled.scatter(self.x, self.y, s=2, c='blue', alpha=0.7, label='Reconstruction')
+                if len(self.tru_points) > 0:
+                    self.ax_labeled.scatter(self.tru_points[:, 0], self.tru_points[:, 1], 
+                                         s=2, c='red', alpha=0.7, label='Truth')
+                self.ax_labeled.legend(loc='upper right')
                 
                 # Set labels
                 for ax in [self.ax_rec, self.ax_tru, self.ax_labeled]:
@@ -220,20 +241,20 @@ class EnhancedEventDisplay:
                 self.ax_rec.scatter(self.x, self.z, s=2, alpha=0.7)
                 
                 # Panel 2: Truth data
-                if 'particles' in self.tru_data:
-                    tru_points = []
-                    for particle in self.tru_data['particles']:
-                        if 'positions' in particle:
-                            for pos in particle['positions']:
-                                tru_points.append([pos.get('x', 0), pos.get('y', 0), pos.get('z', 0)])
-                    
-                    if tru_points:
-                        tru_points = np.array(tru_points)
-                        self.ax_tru.scatter(tru_points[:, 0], tru_points[:, 2], s=2, c='red', alpha=0.7)
+                if len(self.tru_points) > 0:
+                    if len(self.tru_labels) == len(self.tru_points):
+                        self.ax_tru.scatter(self.tru_points[:, 0], self.tru_points[:, 2], 
+                                            s=2, c=self.tru_labels, cmap='plasma', alpha=0.7)
+                    else:
+                        self.ax_tru.scatter(self.tru_points[:, 0], self.tru_points[:, 2], 
+                                            s=2, c='red', alpha=0.7)
                 
-                # Panel 3: Labeled reconstruction data
-                scatter = self.ax_labeled.scatter(self.x, self.z, s=2, c=self.labels, 
-                                               cmap='viridis', alpha=0.7)
+                # Panel 3: Combined truth and reconstruction data
+                self.ax_labeled.scatter(self.x, self.z, s=2, c='blue', alpha=0.7, label='Reconstruction')
+                if len(self.tru_points) > 0:
+                    self.ax_labeled.scatter(self.tru_points[:, 0], self.tru_points[:, 2], 
+                                         s=2, c='red', alpha=0.7, label='Truth')
+                self.ax_labeled.legend(loc='upper right')
                 
                 # Set labels
                 for ax in [self.ax_rec, self.ax_tru, self.ax_labeled]:
@@ -245,34 +266,30 @@ class EnhancedEventDisplay:
                 self.ax_rec.scatter(self.y, self.z, s=2, alpha=0.7)
                 
                 # Panel 2: Truth data
-                if 'particles' in self.tru_data:
-                    tru_points = []
-                    for particle in self.tru_data['particles']:
-                        if 'positions' in particle:
-                            for pos in particle['positions']:
-                                tru_points.append([pos.get('x', 0), pos.get('y', 0), pos.get('z', 0)])
-                    
-                    if tru_points:
-                        tru_points = np.array(tru_points)
-                        self.ax_tru.scatter(tru_points[:, 1], tru_points[:, 2], s=2, c='red', alpha=0.7)
+                if len(self.tru_points) > 0:
+                    if len(self.tru_labels) == len(self.tru_points):
+                        self.ax_tru.scatter(self.tru_points[:, 1], self.tru_points[:, 2], 
+                                            s=2, c=self.tru_labels, cmap='plasma', alpha=0.7)
+                    else:
+                        self.ax_tru.scatter(self.tru_points[:, 1], self.tru_points[:, 2], 
+                                            s=2, c='red', alpha=0.7)
                 
-                # Panel 3: Labeled reconstruction data
-                scatter = self.ax_labeled.scatter(self.y, self.z, s=2, c=self.labels, 
-                                               cmap='viridis', alpha=0.7)
+                # Panel 3: Combined truth and reconstruction data
+                self.ax_labeled.scatter(self.y, self.z, s=2, c='blue', alpha=0.7, label='Reconstruction')
+                if len(self.tru_points) > 0:
+                    self.ax_labeled.scatter(self.tru_points[:, 1], self.tru_points[:, 2], 
+                                         s=2, c='red', alpha=0.7, label='Truth')
+                self.ax_labeled.legend(loc='upper right')
                 
                 # Set labels
                 for ax in [self.ax_rec, self.ax_tru, self.ax_labeled]:
                     ax.set_xlabel('Y')
                     ax.set_ylabel('Z')
-            
-            # Add colorbar to the labeled plot
-            cbar = plt.colorbar(scatter, ax=self.ax_labeled)
-            cbar.set_label('Label')
         
         # Set titles
         self.ax_rec.set_title('Reconstruction')
         self.ax_tru.set_title('Truth')
-        self.ax_labeled.set_title('Labeled Reconstruction')
+        self.ax_labeled.set_title('Combined Truth (red) and Reconstruction (blue)')
         
         # Update the figure
         plt.tight_layout(rect=[0, 0.15, 1, 0.95])  # Make room for controls
