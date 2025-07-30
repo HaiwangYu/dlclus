@@ -25,6 +25,8 @@ class EnhancedEventDisplay:
             Path to truth file
         initial_distance_cut : float
             Initial value for distance cut in cm for matching points
+        z_offset : float
+            Initial value for z-axis offset in cm
         """
         self.rec_data = rec_data
         self.tru_data = tru_data
@@ -108,11 +110,32 @@ class EnhancedEventDisplay:
     
     def add_controls(self):
         """Add interactive controls to the figure"""
-        # Add buttons for view mode
-        ax_3d = plt.axes([0.15, 0.05, 0.05, 0.04])
-        ax_xy = plt.axes([0.25, 0.05, 0.05, 0.04])
-        ax_xz = plt.axes([0.35, 0.05, 0.05, 0.04])
-        ax_yz = plt.axes([0.45, 0.05, 0.05, 0.04])
+        # Define the right panel area for controls
+        control_panel_width = 0.2
+        control_panel_height = 0.9
+        control_panel_bottom = 0.05
+        control_panel_left = 0.78
+        
+        # Create a right panel for controls
+        self.fig.subplots_adjust(right=control_panel_left - 0.01)
+        
+        # Add title for control panel
+        plt.figtext(control_panel_left + control_panel_width/2, 0.95, "Controls", ha='center', fontsize=12)
+        
+        # Add buttons for view mode - vertically arranged on the right
+        btn_height = 0.04
+        btn_width = 0.1
+        btn_spacing = 0.01
+        
+        # Starting positions
+        y_pos = control_panel_bottom + control_panel_height - btn_height - 0.05
+        
+        # View mode buttons (horizontally arranged)
+        ax_3d = plt.axes([control_panel_left, y_pos, btn_width, btn_height])
+        ax_xy = plt.axes([control_panel_left + btn_width + btn_spacing, y_pos, btn_width, btn_height])
+        y_pos -= btn_height + 2*btn_spacing
+        ax_xz = plt.axes([control_panel_left, y_pos, btn_width, btn_height])
+        ax_yz = plt.axes([control_panel_left + btn_width + btn_spacing, y_pos, btn_width, btn_height])
         
         self.btn_3d = Button(ax_3d, '3D')
         self.btn_xy = Button(ax_xy, 'XY')
@@ -124,8 +147,16 @@ class EnhancedEventDisplay:
         self.btn_xz.on_clicked(self.view_xz)
         self.btn_yz.on_clicked(self.view_yz)
         
+        # Add view mode label
+        y_pos -= btn_spacing*3
+        plt.figtext(control_panel_left + control_panel_width/2, y_pos, "View Mode", 
+                   ha='center', fontsize=10)
+        
         # Add slider for distance cut
-        ax_slider = plt.axes([0.15, 0.12, 0.65, 0.03])
+        y_pos -= btn_height + 2*btn_spacing
+        slider_width = control_panel_width * 0.9
+        slider_left = control_panel_left + (control_panel_width - slider_width)/2
+        ax_slider = plt.axes([slider_left, y_pos, slider_width, btn_height])
         self.slider = Slider(
             ax_slider, 'Distance Cut (cm)', 
             0.0, 10.0,  # Range from 0 to 10 cm
@@ -133,27 +164,60 @@ class EnhancedEventDisplay:
             valstep=0.1
         )
         
-        # Add button to update labels
-        ax_update = plt.axes([0.7, 0.05, 0.15, 0.04])
-        self.btn_update = Button(ax_update, 'Update Labels')
-        self.btn_update.on_clicked(self.on_update_labels)
+        # Add slider for z_offset
+        y_pos -= btn_height + 2*btn_spacing
+        ax_z_slider = plt.axes([slider_left, y_pos, slider_width, btn_height])
+        self.z_slider = Slider(
+            ax_z_slider, 'Z Offset (cm)', 
+            -3.0, 3.0,  # Range from -3 to 3 cm
+            valinit=self.z_offset,
+            valstep=0.1
+        )
         
-        # Connect slider to update function
+        # Add button to update labels
+        y_pos -= btn_height + 3*btn_spacing
+        update_btn_width = slider_width
+        update_btn_left = slider_left
+        ax_update = plt.axes([update_btn_left, y_pos, update_btn_width, btn_height*1.2])
+        self.btn_update = Button(ax_update, 'Update Labels')
+        
+        # Connect controls to functions
+        self.btn_update.on_clicked(self.on_update_labels)
         self.slider.on_changed(self.on_slider_changed)
+        self.z_slider.on_changed(self.on_z_offset_changed)
     
     def on_slider_changed(self, val):
-        """Called when the slider value changes"""
+        """Called when the distance slider value changes"""
         self.distance_cut = val
         # We don't update labels automatically to avoid expensive computation
         # The user needs to click the 'Update Labels' button
-        plt.figtext(0.5, 0.01, f"Current distance cut: {self.distance_cut:.1f} cm (click 'Update Labels' to apply)", 
-                   ha='center', fontsize=10)
-        plt.draw()
+        self.update_status_text()
+    
+    def on_z_offset_changed(self, val):
+        """Called when the z_offset slider value changes"""
+        self.z_offset = val
+        self.z = self.points[:, 2] + val*10  # Update z coordinates with new offset in mm
+        self.update_display()
+        self.update_status_text()
     
     def on_update_labels(self, event):
         """Called when the Update Labels button is clicked"""
         self.update_labels()
         self.update_display()
+    
+    def update_status_text(self):
+        """Update the status text at the bottom of the figure"""
+        # Clear previous text if it exists
+        if hasattr(self, 'status_text'):
+            try:
+                self.status_text.remove()
+            except:
+                pass
+        
+        # Add new status text
+        status = f"Distance cut: {self.distance_cut:.1f} cm | Z offset: {self.z_offset:.1f} cm | View: {self.view_mode.upper().replace('2D_', '')}"
+        self.status_text = plt.figtext(0.5, 0.01, status, ha='center', fontsize=10)
+        plt.draw()
     
     def view_3d(self, event):
         """Switch to 3D view"""
@@ -323,23 +387,17 @@ class EnhancedEventDisplay:
         ]
         self.ax_tagged.legend(handles=legend_elements, loc='upper right')
         
-        # Update the figure
-        plt.tight_layout(rect=[0, 0.15, 1, 0.95])  # Make room for controls
+        # Update the figure with tight layout, leaving space at the bottom for status
+        plt.tight_layout(rect=[0, 0.05, 0.77, 0.95])  # Adjusted for right control panel
         
-        # Display current distance cut
-        plt.figtext(0.5, 0.01, f"Current distance cut: {self.distance_cut:.1f} cm", 
-                   ha='center', fontsize=10)
-        
-        # Display view mode
-        mode_str = self.view_mode.upper().replace('2D_', '')
-        plt.figtext(0.5, 0.025, f"View: {mode_str}", 
-                   ha='center', fontsize=10)
+        # Update status text
+        self.update_status_text()
         
         plt.draw()
     
     def show(self):
         """Show the interactive display"""
-        plt.tight_layout(rect=[0, 0.15, 1, 0.95])  # Make room for controls
+        plt.tight_layout(rect=[0, 0.05, 0.77, 0.95])  # Adjusted for right control panel
         plt.show()
 
 
