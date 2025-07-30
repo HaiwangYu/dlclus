@@ -9,7 +9,7 @@ from matplotlib.widgets import Button, Slider
 from dlclus.prep.labeler import get_isnu_labels
 
 class EnhancedEventDisplay:
-    def __init__(self, rec_data, tru_data, rec_file, tru_file, initial_distance_cut=2.0):
+    def __init__(self, rec_data, tru_data, rec_file, tru_file, initial_distance_cut=2.0, z_offset=-2.5):
         """
         Interactive event display for visualization of reconstruction, truth, and labeled data.
         
@@ -31,13 +31,14 @@ class EnhancedEventDisplay:
         self.rec_file = rec_file
         self.tru_file = tru_file
         self.distance_cut = initial_distance_cut
-        self.view_mode = '3d'  # Can be '3d', '2d_xy', '2d_xz', '2d_yz'
+        self.z_offset = z_offset
+        self.view_mode = '2d_xz'  # Can be '3d', '2d_xy', '2d_xz', '2d_yz'
         
         # Extract points from rec_data
         self.points = rec_data['points']
         self.x = self.points[:, 0]
         self.y = self.points[:, 1]
-        self.z = self.points[:, 2]
+        self.z = self.points[:, 2] + z_offset*10  # mm
         
         # Apply initial labeling
         self.update_labels()
@@ -75,7 +76,7 @@ class EnhancedEventDisplay:
     def update_labels(self):
         """Update labels based on current distance cut"""
         try:
-            self.labels = get_isnu_labels(self.tru_file, self.rec_file, self.distance_cut)
+            self.labels = get_isnu_labels(self.tru_file, self.rec_file, self.distance_cut, self.z_offset)
             print(f"Labels updated with distance cut = {self.distance_cut}")
             print(f"Label counts: {np.bincount(self.labels.astype(int) + 2)}")
         except Exception as e:
@@ -342,13 +343,19 @@ class EnhancedEventDisplay:
         plt.show()
 
 
-def load_rec_file(file_path):
+def load_rec_file(file_path, z_offset=-25):
     """Load reconstruction data from NPZ file"""
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Reconstruction file not found: {file_path}")
     
     try:
         data = np.load(file_path)
+        points = data['points']
+        points.setflags(write=1)  # Enable writing
+        points[:, 2] += z_offset
+        print(f"data['points'][0, 2] = {data['points'][0, 2]}")
+        data['points'][:, 2] += z_offset
+        print(f"data['points'][0, 2] = {data['points'][0, 2]} with z_offset {z_offset} ")
         print(f"Successfully loaded reconstruction file: {file_path}")
         return data
     except Exception as e:

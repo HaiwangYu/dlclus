@@ -1,7 +1,7 @@
 import numpy as np
 import json
 from sklearn.neighbors import NearestNeighbors
-def get_isnu_labels(truth_file, g2f_file, max_distance=5):
+def get_isnu_labels(truth_file, g2f_file, max_distance=5, z_offset=-2.5):
     """
     Extract labels from truth data for points in the g2f file using nearest neighbor matching.
     
@@ -11,9 +11,9 @@ def get_isnu_labels(truth_file, g2f_file, max_distance=5):
         Path to the truth data JSON file
     g2f_file : str
         Path to the G2F NPZ file
-    max_distance : float, optional
-        Maximum allowed distance for matching, default is 3
-        
+    max_distance : float, optional, unit: cm
+        Maximum allowed distance for matching
+    z_offset : float, optional, unit: cm
     Returns:
     --------
     np.array
@@ -30,7 +30,7 @@ def get_isnu_labels(truth_file, g2f_file, max_distance=5):
     # Extract coordinates from points (with normalization)
     x = points[:, 0]/10.
     y = points[:, 1]/10.
-    z = points[:, 2]/10.
+    z = points[:, 2]/10. + z_offset
     points_coords = np.array(list(zip(x, y, z)))
     
     # Extract x, y, z coordinates from truth_data
