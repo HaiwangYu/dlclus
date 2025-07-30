@@ -9,48 +9,76 @@ from matplotlib.widgets import Button, Slider
 from dlclus.prep.labeler import get_isnu_labels
 
 class EnhancedEventDisplay:
-    def __init__(self, rec_data, tru_data, rec_file, tru_file, initial_distance_cut=2.0, z_offset=-2.5):
+    def __init__(self, rec_files, tru_files, initial_distance_cut=2.0, z_offset=-2.5):
         """
         Interactive event display for visualization of reconstruction, truth, and labeled data.
         
         Parameters:
         -----------
-        rec_data : dict
-            Reconstruction data loaded from NPZ file
-        tru_data : dict
-            Truth data loaded from JSON file
-        rec_file : str
-            Path to reconstruction file
-        tru_file : str
-            Path to truth file
+        rec_files : list
+            List of paths to reconstruction NPZ files
+        tru_files : list
+            List of paths to truth JSON files
         initial_distance_cut : float
             Initial value for distance cut in cm for matching points
         z_offset : float
             Initial value for z-axis offset in cm
         """
-        self.rec_data = rec_data
-        self.tru_data = tru_data
-        self.rec_file = rec_file
-        self.tru_file = tru_file
+        self.rec_files = rec_files
+        self.tru_files = tru_files
+        self.current_event = 0
+        self.num_events = len(rec_files)
         self.distance_cut = initial_distance_cut
         self.z_offset = z_offset
         self.view_mode = '2d_xz'  # Can be '3d', '2d_xy', '2d_xz', '2d_yz'
         
+        # Load the first event
+        self.load_current_event()
+        
+        # Setup the figure and plots
+        self.fig = plt.figure(figsize=(20, 10))  # Increased size but still under 1920x1080
+        self.setup_plot()
+    
+    def load_current_event(self):
+        """Load the current event's reconstruction and truth data"""
+        rec_file = self.rec_files[self.current_event]
+        tru_file = self.tru_files[self.current_event]
+        
+        print(f"Loading event {self.current_event + 1}/{self.num_events}")
+        print(f"Rec file: {rec_file}")
+        print(f"Truth file: {tru_file}")
+        
+        # Load data files
+        self.rec_data = load_rec_file(rec_file)
+        self.tru_data = load_tru_file(tru_file)
+        self.rec_file = rec_file
+        self.tru_file = tru_file
+        
         # Extract points from rec_data
-        self.points = rec_data['points']
+        self.points = self.rec_data['points']
         self.x = self.points[:, 0]
         self.y = self.points[:, 1]
-        self.z = self.points[:, 2] + z_offset*10  # mm
+        self.z = self.points[:, 2] + self.z_offset*10  # mm
         
         # Apply initial labeling
         self.update_labels()
         
         # Extract truth points and labels for easier access
         self.extract_truth_data()
-        
-        # Setup the figure and plots
-        self.fig = plt.figure(figsize=(20, 10))  # Increased size but still under 1920x1080
-        self.setup_plot()
+    
+    def next_event(self, event=None):
+        """Load the next event"""
+        if self.current_event < self.num_events - 1:
+            self.current_event += 1
+            self.load_current_event()
+            self.setup_plot()
+    
+    def prev_event(self, event=None):
+        """Load the previous event"""
+        if self.current_event > 0:
+            self.current_event -= 1
+            self.load_current_event()
+            self.setup_plot()
         
     def extract_truth_data(self):
         """Extract truth data points and labels from the truth file"""
@@ -130,6 +158,25 @@ class EnhancedEventDisplay:
         # Starting positions
         y_pos = control_panel_bottom + control_panel_height - btn_height - 0.05
         
+        # Add navigation buttons if multiple events
+        if self.num_events > 1:
+            # Add event navigation label
+            plt.figtext(control_panel_left + control_panel_width/2, y_pos + btn_height, 
+                       f"Event Navigation ({self.current_event + 1}/{self.num_events})", 
+                       ha='center', fontsize=10)
+            
+            # Navigation buttons (horizontally arranged)
+            ax_prev = plt.axes([control_panel_left, y_pos, btn_width, btn_height])
+            ax_next = plt.axes([control_panel_left + btn_width + btn_spacing, y_pos, btn_width, btn_height])
+            
+            self.btn_prev = Button(ax_prev, '< Prev')
+            self.btn_next = Button(ax_next, 'Next >')
+            
+            self.btn_prev.on_clicked(self.prev_event)
+            self.btn_next.on_clicked(self.next_event)
+            
+            y_pos -= btn_height + 3*btn_spacing
+        
         # View mode buttons (horizontally arranged)
         ax_3d = plt.axes([control_panel_left, y_pos, btn_width, btn_height])
         ax_xy = plt.axes([control_panel_left + btn_width + btn_spacing, y_pos, btn_width, btn_height])
@@ -199,8 +246,6 @@ class EnhancedEventDisplay:
     def on_slider_changed(self, val):
         """Called when the distance slider value changes"""
         self.distance_cut = val
-        # We don't update labels automatically to avoid expensive computation
-        # The user needs to click the 'Update Labels' button
         self.update_status_text()
     
     def on_z_offset_changed(self, val):
@@ -225,7 +270,8 @@ class EnhancedEventDisplay:
                 pass
         
         # Add new status text
-        status = f"Distance cut: {self.distance_cut:.1f} cm | Z offset: {self.z_offset:.1f} cm | View: {self.view_mode.upper().replace('2D_', '')}"
+        event_info = f"Event: {self.current_event + 1}/{self.num_events} | " if self.num_events > 1 else ""
+        status = f"{event_info}Distance cut: {self.distance_cut:.1f} cm | Z offset: {self.z_offset:.1f} cm | View: {self.view_mode.upper().replace('2D_', '')}"
         self.status_text = plt.figtext(0.5, 0.01, status, ha='center', fontsize=10)
         plt.draw()
     
@@ -444,26 +490,61 @@ def load_tru_file(file_path):
         raise RuntimeError(f"Error loading truth file: {str(e)}")
 
 
+def load_file_list(file_path):
+    """
+    Load a list of files from a text file.
+    Each line in the file is considered a file path.
+    
+    Parameters:
+    -----------
+    file_path : str
+        Path to the file containing a list of file paths
+        
+    Returns:
+    --------
+    list
+        List of file paths
+    """
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"File list not found: {file_path}")
+    
+    try:
+        with open(file_path, 'r') as f:
+            # Read lines and remove whitespace, skip empty lines
+            file_list = [line.strip() for line in f.readlines() if line.strip()]
+        print(f"Loaded {len(file_list)} entries from list file: {file_path}")
+        return file_list
+    except Exception as e:
+        raise RuntimeError(f"Error loading file list: {str(e)}")
+
+
 def main():
     parser = argparse.ArgumentParser(description='Check reconstruction and truth data with interactive display')
-    parser.add_argument('--rec', required=True, help='Path to reconstruction NPZ file')
-    parser.add_argument('--tru', required=True, help='Path to truth JSON file')
+    parser.add_argument('--rec', required=True, help='Path to file containing a list of reconstruction NPZ files')
+    parser.add_argument('--tru', required=True, help='Path to file containing a list of truth JSON files')
     parser.add_argument('--distance-cut', type=float, default=2.0, 
                         help='Initial distance cut for matching points (cm)')
     
     args = parser.parse_args()
     
     try:
-        # Load data files
-        rec_data = load_rec_file(args.rec)
-        tru_data = load_tru_file(args.tru)
+        # Load file lists from the provided files
+        rec_files = load_file_list(args.rec)
+        tru_files = load_file_list(args.tru)
         
-        # Create interactive display
+        # Ensure that the number of rec and truth files match
+        if len(rec_files) != len(tru_files):
+            print(f"Error: Number of reconstruction files ({len(rec_files)}) must match number of truth files ({len(tru_files)})")
+            sys.exit(1)
+        
+        if len(rec_files) == 0:
+            print("Error: No files found in the provided lists")
+            sys.exit(1)
+            
+        # Create interactive display with lists of files
         display = EnhancedEventDisplay(
-            rec_data=rec_data,
-            tru_data=tru_data,
-            rec_file=args.rec,
-            tru_file=args.tru,
+            rec_files=rec_files,
+            tru_files=tru_files,
             initial_distance_cut=args.distance_cut
         )
         
