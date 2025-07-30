@@ -46,7 +46,7 @@ class EnhancedEventDisplay:
         self.extract_truth_data()
         
         # Setup the figure and plots
-        self.fig = plt.figure(figsize=(18, 8))
+        self.fig = plt.figure(figsize=(20, 10))  # Increased size but still under 1920x1080
         self.setup_plot()
         
     def extract_truth_data(self):
@@ -87,15 +87,17 @@ class EnhancedEventDisplay:
         # Clear previous figure content
         self.fig.clear()
         
-        # Create subplot grid: 3 panels + space for controls
+        # Create subplot grid: 4 panels + space for controls
         if self.view_mode == '3d':
-            self.ax_rec = self.fig.add_subplot(131, projection='3d')
-            self.ax_tru = self.fig.add_subplot(132, projection='3d')
-            self.ax_labeled = self.fig.add_subplot(133, projection='3d')
+            self.ax_rec = self.fig.add_subplot(221, projection='3d')
+            self.ax_tru = self.fig.add_subplot(222, projection='3d')
+            self.ax_labeled = self.fig.add_subplot(223, projection='3d')
+            self.ax_tagged = self.fig.add_subplot(224, projection='3d')
         else:
-            self.ax_rec = self.fig.add_subplot(131)
-            self.ax_tru = self.fig.add_subplot(132)
-            self.ax_labeled = self.fig.add_subplot(133)
+            self.ax_rec = self.fig.add_subplot(221)
+            self.ax_tru = self.fig.add_subplot(222)
+            self.ax_labeled = self.fig.add_subplot(223)
+            self.ax_tagged = self.fig.add_subplot(224)
         
         # Add control buttons and slider
         self.add_controls()
@@ -125,7 +127,7 @@ class EnhancedEventDisplay:
         ax_slider = plt.axes([0.15, 0.12, 0.65, 0.03])
         self.slider = Slider(
             ax_slider, 'Distance Cut (cm)', 
-            0.1, 10.0, 
+            0.0, 10.0,  # Range from 0 to 10 cm
             valinit=self.distance_cut,
             valstep=0.1
         )
@@ -173,11 +175,12 @@ class EnhancedEventDisplay:
         self.setup_plot()
     
     def update_display(self):
-        """Update all three panels with current data and view"""
+        """Update all four panels with current data and view"""
         # Clear axes
         self.ax_rec.clear()
         self.ax_tru.clear()
         self.ax_labeled.clear()
+        self.ax_tagged.clear()
         
         # Plot differently based on view mode
         if self.view_mode == '3d':
@@ -204,8 +207,13 @@ class EnhancedEventDisplay:
                                      self.tru_points[:, 2], s=2, c='red', alpha=0.7, label='Truth')
             self.ax_labeled.legend(loc='upper right')
             
+            # Panel 4: Tagged reconstruction data
+            # Color reconstruction points based on label: -2 (gray), -1 (green), 0 (blue), 1 (red)
+            colors = np.array(['gray', 'green', 'blue', 'red'])[self.labels.astype(int) + 2]
+            self.ax_tagged.scatter(self.x, self.y, self.z, s=2, c=colors, alpha=0.7)
+            
             # Set labels for all axes
-            for ax in [self.ax_rec, self.ax_tru, self.ax_labeled]:
+            for ax in [self.ax_rec, self.ax_tru, self.ax_labeled, self.ax_tagged]:
                 ax.set_xlabel('X')
                 ax.set_ylabel('Y')
                 ax.set_zlabel('Z')
@@ -231,8 +239,12 @@ class EnhancedEventDisplay:
                                          s=2, c='red', alpha=0.7, label='Truth')
                 self.ax_labeled.legend(loc='upper right')
                 
+                # Panel 4: Tagged reconstruction data
+                colors = np.array(['gray', 'green', 'blue', 'red'])[self.labels.astype(int) + 2]
+                self.ax_tagged.scatter(self.x, self.y, s=2, c=colors, alpha=0.7)
+                
                 # Set labels
-                for ax in [self.ax_rec, self.ax_tru, self.ax_labeled]:
+                for ax in [self.ax_rec, self.ax_tru, self.ax_labeled, self.ax_tagged]:
                     ax.set_xlabel('X')
                     ax.set_ylabel('Y')
                     
@@ -256,8 +268,12 @@ class EnhancedEventDisplay:
                                          s=2, c='red', alpha=0.7, label='Truth')
                 self.ax_labeled.legend(loc='upper right')
                 
+                # Panel 4: Tagged reconstruction data
+                colors = np.array(['gray', 'green', 'blue', 'red'])[self.labels.astype(int) + 2]
+                self.ax_tagged.scatter(self.x, self.z, s=2, c=colors, alpha=0.7)
+                
                 # Set labels
-                for ax in [self.ax_rec, self.ax_tru, self.ax_labeled]:
+                for ax in [self.ax_rec, self.ax_tru, self.ax_labeled, self.ax_tagged]:
                     ax.set_xlabel('X')
                     ax.set_ylabel('Z')
                     
@@ -281,8 +297,12 @@ class EnhancedEventDisplay:
                                          s=2, c='red', alpha=0.7, label='Truth')
                 self.ax_labeled.legend(loc='upper right')
                 
+                # Panel 4: Tagged reconstruction data
+                colors = np.array(['gray', 'green', 'blue', 'red'])[self.labels.astype(int) + 2]
+                self.ax_tagged.scatter(self.y, self.z, s=2, c=colors, alpha=0.7)
+                
                 # Set labels
-                for ax in [self.ax_rec, self.ax_tru, self.ax_labeled]:
+                for ax in [self.ax_rec, self.ax_tru, self.ax_labeled, self.ax_tagged]:
                     ax.set_xlabel('Y')
                     ax.set_ylabel('Z')
         
@@ -290,6 +310,17 @@ class EnhancedEventDisplay:
         self.ax_rec.set_title('Reconstruction')
         self.ax_tru.set_title('Truth')
         self.ax_labeled.set_title('Combined Truth (red) and Reconstruction (blue)')
+        self.ax_tagged.set_title('Tagged Reconstruction (by label)')
+        
+        # Add legend for the tagged reconstruction panel
+        from matplotlib.lines import Line2D
+        legend_elements = [
+            Line2D([0], [0], marker='o', color='w', markerfacecolor='gray', markersize=8, label='No match (-2)'),
+            Line2D([0], [0], marker='o', color='w', markerfacecolor='green', markersize=8, label='Non-trackable (-1)'),
+            Line2D([0], [0], marker='o', color='w', markerfacecolor='blue', markersize=8, label='Non-neutrino (0)'),
+            Line2D([0], [0], marker='o', color='w', markerfacecolor='red', markersize=8, label='Neutrino (1)')
+        ]
+        self.ax_tagged.legend(handles=legend_elements, loc='upper right')
         
         # Update the figure
         plt.tight_layout(rect=[0, 0.15, 1, 0.95])  # Make room for controls
