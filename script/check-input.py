@@ -309,11 +309,12 @@ class EnhancedEventDisplay:
             self.ax_rec.scatter(self.x, self.y, self.z, s=2, alpha=0.7)
             
             # Panel 2: Truth data
+            tru_colors = np.array(['gray', 'green', 'blue', 'red'])[self.tru_labels.astype(int) + 2]
             if len(self.tru_points) > 0:
                 # Use truth label for coloring if available
                 if len(self.tru_labels) == len(self.tru_points):
                     self.ax_tru.scatter(self.tru_points[:, 0], self.tru_points[:, 1], 
-                                        self.tru_points[:, 2], s=2, c=self.tru_labels,
+                                        self.tru_points[:, 2], s=2, c=tru_colors,
                                         cmap='plasma', alpha=0.7)
                 else:
                     self.ax_tru.scatter(self.tru_points[:, 0], self.tru_points[:, 1], 
@@ -345,10 +346,11 @@ class EnhancedEventDisplay:
                 self.ax_rec.scatter(self.x, self.y, s=2, alpha=0.7)
                 
                 # Panel 2: Truth data
+                tru_colors = np.array(['gray', 'green', 'blue', 'red'])[self.tru_labels.astype(int) + 2]
                 if len(self.tru_points) > 0:
                     if len(self.tru_labels) == len(self.tru_points):
                         self.ax_tru.scatter(self.tru_points[:, 0], self.tru_points[:, 1], 
-                                            s=2, c=self.tru_labels, cmap='plasma', alpha=0.7)
+                                            s=2, c=tru_colors, cmap='plasma', alpha=0.7)
                     else:
                         self.ax_tru.scatter(self.tru_points[:, 0], self.tru_points[:, 1], 
                                             s=2, c='red', alpha=0.7)
@@ -374,10 +376,11 @@ class EnhancedEventDisplay:
                 self.ax_rec.scatter(self.x, self.z, s=2, alpha=0.7)
                 
                 # Panel 2: Truth data
+                tru_colors = np.array(['gray', 'green', 'blue', 'red'])[self.tru_labels.astype(int) + 2]
                 if len(self.tru_points) > 0:
                     if len(self.tru_labels) == len(self.tru_points):
                         self.ax_tru.scatter(self.tru_points[:, 0], self.tru_points[:, 2], 
-                                            s=2, c=self.tru_labels, cmap='plasma', alpha=0.7)
+                                            s=2, c=tru_colors, cmap='plasma', alpha=0.7)
                     else:
                         self.ax_tru.scatter(self.tru_points[:, 0], self.tru_points[:, 2], 
                                             s=2, c='red', alpha=0.7)
@@ -403,10 +406,11 @@ class EnhancedEventDisplay:
                 self.ax_rec.scatter(self.y, self.z, s=2, alpha=0.7)
                 
                 # Panel 2: Truth data
+                tru_colors = np.array(['gray', 'green', 'blue', 'red'])[self.tru_labels.astype(int) + 2]
                 if len(self.tru_points) > 0:
                     if len(self.tru_labels) == len(self.tru_points):
                         self.ax_tru.scatter(self.tru_points[:, 1], self.tru_points[:, 2], 
-                                            s=2, c=self.tru_labels, cmap='plasma', alpha=0.7)
+                                            s=2, c=tru_colors, cmap='plasma', alpha=0.7)
                     else:
                         self.ax_tru.scatter(self.tru_points[:, 1], self.tru_points[:, 2], 
                                             s=2, c='red', alpha=0.7)
@@ -441,7 +445,7 @@ class EnhancedEventDisplay:
             Line2D([0], [0], marker='o', color='w', markerfacecolor='blue', markersize=8, label='Non-neutrino (0)'),
             Line2D([0], [0], marker='o', color='w', markerfacecolor='red', markersize=8, label='Neutrino (1)')
         ]
-        self.ax_tagged.legend(handles=legend_elements, loc='upper right')
+        self.ax_tagged.legend(handles=legend_elements, loc='upper left')
         
         # Update the figure with tight layout, leaving space at the bottom for status
         plt.tight_layout(rect=[0, 0.05, 0.77, 0.95])  # Adjusted for right control panel
