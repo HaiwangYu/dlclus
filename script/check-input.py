@@ -152,23 +152,33 @@ class EnhancedEventDisplay:
         plt.figtext(control_panel_left + control_panel_width/2, y_pos, "View Mode", 
                    ha='center', fontsize=10)
         
-        # Add slider for distance cut
-        y_pos -= btn_height + 2*btn_spacing
+        # Add sliders with labels above them
         slider_width = control_panel_width * 0.9
         slider_left = control_panel_left + (control_panel_width - slider_width)/2
+        
+        # Distance Cut slider
+        y_pos -= btn_height + 2*btn_spacing
+        # Add title above the slider
+        plt.figtext(slider_left + slider_width/2, y_pos, "Distance Cut (cm)", 
+                   ha='center', fontsize=10)
+        y_pos -= btn_spacing * 2
         ax_slider = plt.axes([slider_left, y_pos, slider_width, btn_height])
         self.slider = Slider(
-            ax_slider, 'Distance Cut (cm)', 
+            ax_slider, '',  # Empty label since we're using figtext above
             0.0, 10.0,  # Range from 0 to 10 cm
             valinit=self.distance_cut,
             valstep=0.1
         )
         
-        # Add slider for z_offset
-        y_pos -= btn_height + 2*btn_spacing
+        # Z Offset slider
+        y_pos -= btn_height + 3*btn_spacing
+        # Add title above the slider
+        plt.figtext(slider_left + slider_width/2, y_pos, "Z Offset (cm)", 
+                   ha='center', fontsize=10)
+        y_pos -= btn_spacing * 2
         ax_z_slider = plt.axes([slider_left, y_pos, slider_width, btn_height])
         self.z_slider = Slider(
-            ax_z_slider, 'Z Offset (cm)', 
+            ax_z_slider, '',  # Empty label since we're using figtext above
             -3.0, 3.0,  # Range from -3 to 3 cm
             valinit=self.z_offset,
             valstep=0.1
