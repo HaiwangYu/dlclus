@@ -1,7 +1,7 @@
 import numpy as np
 import json
 from sklearn.neighbors import NearestNeighbors
-def get_isnu_labels(truth_file, g2f_file, max_distance=5, z_offset=-2.5):
+def get_isnu_labels(truth_file, g2f_file, max_distance=5, z_offset=0):
     """
     Extract labels from truth data for points in the g2f file using nearest neighbor matching.
     

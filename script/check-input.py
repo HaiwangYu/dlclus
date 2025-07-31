@@ -9,7 +9,7 @@ from matplotlib.widgets import Button, Slider
 from dlclus.prep.labeler import get_isnu_labels
 
 class EnhancedEventDisplay:
-    def __init__(self, rec_files, tru_files, initial_distance_cut=2.0, z_offset=-2.5):
+    def __init__(self, rec_files, tru_files, initial_distance_cut=2.0, z_offset=0):
         """
         Interactive event display for visualization of reconstruction, truth, and labeled data.
         
@@ -56,9 +56,13 @@ class EnhancedEventDisplay:
         
         # Extract points from rec_data
         self.points = self.rec_data['points']
+        print(f"self.points[0:10,:]: {self.points[0:10,:]}")
+        print(f"self.rec_data['ppedges']: {self.rec_data['ppedges']}")
+        print(f"self.rec_data['blobs']: {self.rec_data['blobs']}")
         self.x = self.points[:, 0]
         self.y = self.points[:, 1]
         self.z = self.points[:, 2] + self.z_offset*10  # mm
+        self.point_color = self.points[:, 5] # 3: charge, 4: blob_idx; 5: cluster_idx
         
         # Apply initial labeling
         self.update_labels()
@@ -306,7 +310,7 @@ class EnhancedEventDisplay:
         # Plot differently based on view mode
         if self.view_mode == '3d':
             # Panel 1: Reconstruction data
-            self.ax_rec.scatter(self.x, self.y, self.z, s=2, alpha=0.7)
+            self.ax_rec.scatter(self.x, self.y, self.z, s=2, c=self.point_color, alpha=0.7)
             
             # Panel 2: Truth data
             tru_colors = np.array(['gray', 'green', 'blue', 'red'])[self.tru_labels.astype(int) + 2]
@@ -343,7 +347,7 @@ class EnhancedEventDisplay:
         else:  # 2D views
             if self.view_mode == '2d_xy':
                 # Panel 1: Reconstruction data
-                self.ax_rec.scatter(self.x, self.y, s=2, alpha=0.7)
+                self.ax_rec.scatter(self.x, self.y, s=2, c=self.point_color, alpha=0.7)
                 
                 # Panel 2: Truth data
                 tru_colors = np.array(['gray', 'green', 'blue', 'red'])[self.tru_labels.astype(int) + 2]
@@ -373,7 +377,7 @@ class EnhancedEventDisplay:
                     
             elif self.view_mode == '2d_xz':
                 # Panel 1: Reconstruction data
-                self.ax_rec.scatter(self.x, self.z, s=2, alpha=0.7)
+                self.ax_rec.scatter(self.x, self.z, s=2, c=self.point_color, alpha=0.7)
                 
                 # Panel 2: Truth data
                 tru_colors = np.array(['gray', 'green', 'blue', 'red'])[self.tru_labels.astype(int) + 2]
@@ -403,7 +407,7 @@ class EnhancedEventDisplay:
                     
             else:  # '2d_yz'
                 # Panel 1: Reconstruction data
-                self.ax_rec.scatter(self.y, self.z, s=2, alpha=0.7)
+                self.ax_rec.scatter(self.y, self.z, s=2, c=self.point_color, alpha=0.7)
                 
                 # Panel 2: Truth data
                 tru_colors = np.array(['gray', 'green', 'blue', 'red'])[self.tru_labels.astype(int) + 2]

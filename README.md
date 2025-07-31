@@ -21,26 +21,46 @@ cd dl-clus
 pip install -e .
 ```
 
-## Usage
+## data prep
 
-### Data Preparation
-
-Use the labeling utilities to prepare your data:
-
+### ups env:
+currently using local builds of wire-cell and larereco
 ```bash
-python dl-clus/prep/labeling.py --tru-prefix /path/to/truth/files \
-                               --rec-prefix /path/to/reco/files \
-                               --out-prefix /path/to/output/files \
-                               --entries 0-10
+# in the sl7 container:
+source /exp/sbnd/app/users/yuhw/wire-cell-toolkit/setup.sh
 ```
 
-### FCL Files
+### python env:
+```bash
+# gpvm
+source /exp/sbnd/app/users/yuhw/dl-clustering/venv/bin/activate
+# eaf
+source /exp/sbnd/app/users/yuhw/dl-clustering/venv_eaf/bin/activate
+```
 
-The `fcl` directory contains FHiCL configuration files for running WireCell with different settings:
+### prep
+setup the two batch scripts then run commands below:
+```bash
+# ups env
+./batch_run_fcl.sh
+# python env
+./batch_run_labeling.sh
+```
 
-- `wcls-img-clus.fcl`: Configuration for WireCell imaging and clustering
-- `celltree_sbnd_apa0.fcl` and `celltree_sbnd_apa1.fcl`: Configurations for the two APAs
+### train
+```bash
+./train.sh
+```
 
-## License
+### val
+```bash
+./val.sh
+```
 
-This project is licensed under the terms of the MIT license.
+
+### Data Format:
+
+rec:
+points: [x, y, z, q, blob_idx]
+ppedges: [head, tail, dist]
+blobs: [q, ncorners, x_i, y_i, z_i, ..., x_ncorners, ...]
