@@ -39,7 +39,7 @@ source /exp/sbnd/app/users/yuhw/dl-clustering/venv_eaf/bin/activate
 ```
 
 ### prep
-change the paths in the two batch scripts then run commands below:
+change the configurations in the two batch scripts then run commands below:
 ```bash
 # ups env
 ./batch_run_fcl.sh
