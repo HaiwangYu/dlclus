@@ -16,8 +16,8 @@ echo ${FHICL_FILE_PATH} | tr ':' '\n'
 input_path="/exp/sbnd/app/users/yuhw/dl-clustering/artroot/20250618/"
 output_path="/exp/sbnd/app/users/yuhw/dl-clustering/sample/20250618/"
 job_batchid=77451011
-start_job=0
-end_job=0
+start_job=1
+end_job=99
 
 # Ensure input path exists
 if [ ! -d "$input_path" ]; then
