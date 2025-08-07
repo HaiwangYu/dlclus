@@ -1,7 +1,7 @@
 import numpy as np
 import json
 from sklearn.neighbors import NearestNeighbors
-def get_isnu_labels(truth_file, g2f_file, max_distance=5, z_offset=0):
+def get_isnu_labels(truth_file, g2f_file, max_distance=5, z_offset=0, tagging_alg = "blob"):
     """
     Extract labels from truth data for points in the g2f file using nearest neighbor matching.
     
@@ -14,6 +14,8 @@ def get_isnu_labels(truth_file, g2f_file, max_distance=5, z_offset=0):
     max_distance : float, optional, unit: cm
         Maximum allowed distance for matching
     z_offset : float, optional, unit: cm
+    tagging_alg: point, blob, cluster
+
     Returns:
     --------
     np.array
@@ -31,6 +33,8 @@ def get_isnu_labels(truth_file, g2f_file, max_distance=5, z_offset=0):
     x = points[:, 0]/10.
     y = points[:, 1]/10.
     z = points[:, 2]/10. + z_offset
+    bidx = points[:, 4]
+    cidx = points[:, 5]
     points_coords = np.array(list(zip(x, y, z)))
     
     # Extract x, y, z coordinates from truth_data
@@ -51,5 +55,17 @@ def get_isnu_labels(truth_file, g2f_file, max_distance=5, z_offset=0):
     # -2: the KDTree search did not find a point within max_distance
     isnu = np.array([-2 if dist > max_distance else truth_data['q'][idx] 
                     for dist, idx in zip(distances.flatten(), indices.flatten())])
+
+    if tagging_alg == "blob":
+        # If any point in the same blob is labeled as 1, label all points in that blob as 1
+        for b in np.unique(bidx):
+            if 1 in isnu[bidx == b]:
+                isnu[bidx == b] = 1
+
+    if tagging_alg == "cluster":
+        # If any point in the same cluster is labeled as 1, label all points in that cluster as 1
+        for c in np.unique(cidx):
+            if 1 in isnu[cidx == c]:
+                isnu[cidx == c] = 1
     
     return isnu
