@@ -14,8 +14,8 @@ if script_dir not in sys.path:
 input_path = "/exp/sbnd/app/users/yuhw/dl-clus/sample/20250618/"
 output_path = "/exp/sbnd/app/users/yuhw/dl-clus/sample/20250618/"
 job_batchid = 77451011
-start_job = 1
-end_job = 1
+start_job = 2
+end_job = 99
 
 def process_job_folder(job_id):
     """Process a single job folder"""
@@ -62,9 +62,12 @@ def process_job_folder(job_id):
         # Create symbolic link to labeling.py
         subprocess.run(["ln", "-sf", os.path.join(script_dir, "labeling.py"), "."])
         
-        # Run the labeling script
-        print(f"Running: {script_dir}/run_labeling.sh 0 {max_event}")
-        subprocess.run([os.path.join(script_dir, "run_labeling.sh"), "0", str(max_event)], 
+        # Run the labeling script using bash explicitly
+        labeling_script = os.path.join(script_dir, "run_labeling.sh")
+        print(f"Running: bash {labeling_script} 0 {max_event}")
+        
+        # Fix: Use bash explicitly to run the shell script
+        subprocess.run(["bash", labeling_script, "0", str(max_event)], 
                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
         # Remove the symbolic link
@@ -81,7 +84,7 @@ def main():
     job_ids = list(range(start_job, end_job + 1))
     
     # Process job folders in parallel
-    p_map(process_job_folder, job_ids, num_cpus=30)
+    p_map(process_job_folder, job_ids, num_cpus=100)
     
     print("All job folders processed successfully!")
 
