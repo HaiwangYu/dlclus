@@ -24,6 +24,8 @@ wheels/
 .installed.cfg
 *.egg
 *.json
+sample
+*log
 
 # Jupyter Notebook
 .ipynb_checkpoints

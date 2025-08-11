@@ -14,8 +14,8 @@ echo ${PYTHONPATH} | tr ':' '\n'
 # fi
 # input_path="$1"
 # output_path="$2"
-input_path="/exp/sbnd/app/users/yuhw/dl-clustering/sample/20250618/"
-output_path="/exp/sbnd/app/users/yuhw/dl-clustering/sample/20250618/"
+input_path="/exp/sbnd/app/users/yuhw/dl-clus/sample/20250618/"
+output_path="/exp/sbnd/app/users/yuhw/dl-clus/sample/20250618/"
 job_batchid=77451011
 start_job=1
 end_job=99

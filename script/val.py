@@ -33,8 +33,23 @@ def load_model(model_path, device, input_dim=5, hidden_dim=64):
     model : GNNModel
         The loaded model
     """
+    # Try to load model state first to determine its structure
+    state_dict = torch.load(model_path, map_location=device)
+    
+    # Check if we can determine input dimension from the saved weights
+    for name, param in state_dict.items():
+        if name == 'conv1.nn.0.weight':
+            actual_dims = param.shape
+            # The weight shape is [hidden_dim, 2*input_dim]
+            # So input_dim = actual_dims[1] / 2
+            derived_input_dim = actual_dims[1] // 2
+            print(f"Detected input_dim={derived_input_dim} from saved model (weight shape: {actual_dims})")
+            input_dim = derived_input_dim
+            break
+    
+    # Now initialize the model with the correct dimensions
     model = GNNModel(input_dim=input_dim, hidden_dim=hidden_dim).to(device)
-    model.load_state_dict(torch.load(model_path, map_location=device))
+    model.load_state_dict(state_dict)
     model.eval()
     return model
 
@@ -530,6 +545,7 @@ def main():
     print("Running validation...")
     for i, data_item in enumerate(tqdm(data_items)):
         # Get predictions
+        print(f"Processing item {i+1}/{len(data_items)} with shape {data_item['points'].shape}")
         pred_classes, _ = predict_on_data(model, data_item, device)
         
         # Store predictions for this item

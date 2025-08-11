@@ -1,1 +1,1 @@
-python val.py --model ../model/avinay20250618-hello-e10.pt --file-list ../sample/20250618-partial-val.list --display
+python val.py --model ../model/avinay20250618-v2-hello-e10.pt --file-list ../sample/20250618-rec-lab-apa1-val.lst --display
