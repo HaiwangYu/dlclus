@@ -1,3 +1,10 @@
+# User
+*.json
+sample
+*log
+*~
+venv*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -23,10 +30,6 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-*.json
-sample
-*log
-venv*
 
 # Jupyter Notebook
 .ipynb_checkpoints
