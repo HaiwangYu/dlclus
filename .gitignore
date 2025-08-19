@@ -26,6 +26,7 @@ wheels/
 *.json
 sample
 *log
+venv*
 
 # Jupyter Notebook
 .ipynb_checkpoints

@@ -67,6 +67,7 @@ def load_data_from_list(list_file):
 def build_graph(data_item):
     """
     Build a PyTorch Geometric graph from a data item.
+    Uses pre-computed edges from data_item['edges'] instead of calculating them.
     """
     # Extract points and their features
     points = data_item['points']
@@ -81,19 +82,9 @@ def build_graph(data_item):
     # Convert -2 to 0 (not neutrino) and >0 to 1 (neutrino)
     y = (y > 0).long()
     
-    # Build edges based on k-nearest neighbors
-    from sklearn.neighbors import NearestNeighbors
-    k = 8  # Number of neighbors
-    knn = NearestNeighbors(n_neighbors=k+1)  # +1 because the point itself is included
-    knn.fit(points)
-    
-    # Get k nearest neighbors for each point
-    distances, indices = knn.kneighbors(points)
-    
-    # Build edge_index
-    rows = np.repeat(np.arange(len(points)), k)
-    cols = indices[:, 1:].flatten()  # Skip the first column (self)
-    edge_index = torch.tensor(np.vstack([rows, cols]), dtype=torch.long)
+    # Use provided edges directly
+    # data_item['edges'] should be a 2×Nedges array with [head_idx, tail_idx] pairs
+    edge_index = torch.tensor(data_item['ppedges'][:, 0:2].T, dtype=torch.long)
     
     # Create PyTorch Geometric Data object
     data = Data(x=x, edge_index=edge_index, y=y)
@@ -129,7 +120,7 @@ def prepare_loader(data_list, batch_size=1, shuffle=False):
     
     return loader
 
-def prepare_datasets(data_list, train_ratio=0.5, val_ratio=0.5):
+def prepare_datasets(data_list, train_ratio=0.9, val_ratio=0.1):
     """
     Prepare train, validation, and test datasets.
     """
