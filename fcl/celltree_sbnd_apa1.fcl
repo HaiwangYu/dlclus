@@ -73,6 +73,7 @@ physics.analyzers.wirecell.saveJSON : false
 physics.analyzers.wirecell.processSpacePointTruthDepo_Particle : true
 physics.analyzers.wirecell.SpacePointLabels : ["truthDepo"]
 physics.analyzers.wirecell.SimEnergyDepositLabel : "ionandscint:"
+physics.analyzers.wirecell.OpFlashLabel : "opflashtpc1:"
 # edepos clustering
 physics.analyzers.wirecell.t0_corrected : false
 physics.analyzers.wirecell.drift_speed : 1.56

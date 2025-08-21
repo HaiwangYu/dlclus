@@ -10,6 +10,16 @@ DL-CLUS performs neutrino interaction clustering in LArTPC data using deep learn
 - Truth labeling utilities
 - Deep learning models for clustering
 
+## Data format
+
+reco .npz
+
+points: [x, y, z, q, blob_idx]
+ppedges: [head, tail, dist]
+blobs: [q, ncorners, x_i, y_i, z_i, ..., x_ncorners, ...]
+
+truth .json
+
 ## Installation
 
 ```bash
@@ -58,9 +68,3 @@ change the configurations in the two batch scripts then run commands below:
 ```
 
 
-### Data Format:
-
-rec:
-points: [x, y, z, q, blob_idx]
-ppedges: [head, tail, dist]
-blobs: [q, ncorners, x_i, y_i, z_i, ..., x_ncorners, ...]
