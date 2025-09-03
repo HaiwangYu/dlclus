@@ -70,7 +70,8 @@ physics.analyzers.wirecell.saveDNNCalib: false
 physics.analyzers.wirecell.DNNCalibLabel: "sptpc2d:dnnsp"
 
 physics.analyzers.wirecell.saveJSON : true
-physics.analyzers.wirecell.SpacePointLabels : ["truthDepo"]
+physics.analyzers.wirecell.saveJSONinBEEFormat : false
+physics.analyzers.wirecell.SpacePointLabels : [] # truthDepo
 physics.analyzers.wirecell.SimEnergyDepositLabel : "ionandscint:"
 # edepos clustering
 physics.analyzers.wirecell.t0_corrected : false
@@ -81,10 +82,10 @@ physics.analyzers.wirecell.readout_start : -200 # unit: us. -205? Start time of 
 physics.analyzers.wirecell.readout_end : 1500 # unit: us. different? End time of readout window
 physics.analyzers.wirecell.clustering_delta_t : 25 # 25 ns. Delta t for clustering edepos
 physics.analyzers.wirecell.z_offset : 0.5 # unit: cm. Add this offset to SED z position
-physics.analyzers.wirecell.saveMC : false 
-physics.analyzers.wirecell.mcOption : "nuOnly"
-physics.analyzers.wirecell.saveMCTrackPoints : false
+physics.analyzers.wirecell.saveMC : true 
+physics.analyzers.wirecell.mcOption : "nuOnly" # "all", "nuOnly"
+physics.analyzers.wirecell.saveMCTrackPoints : true
 
-physics.analyzers.wirecell.processSpacePointTruthDepo_Particle : true
+physics.analyzers.wirecell.processSpacePointTruthDepo_Truth : true
 physics.analyzers.wirecell.processOpFlash_json : true
 physics.analyzers.wirecell.OpFlashLabel : "opflashtpc1:"

@@ -1,9 +1,10 @@
 #!/bin/bash
 
-sta_idx=0
-end_idx=0
+sta_idx=$1
+end_idx=$2
 
 # Create the base directory if it doesn't exist
+# rm -rf bee
 mkdir -p bee/data
 
 unzip -o mabc-apa0-face0.zip -d bee
@@ -16,8 +17,9 @@ for apa in apa0 apa1; do
         mkdir -p bee/data/$x
         
         # Copy the file
-        cp tru-$apa-$x.json bee/data/$x/$x-tru-$apa-$x.json
-        cp rec-op-$apa-$x.json bee/data/$x/$x-rec-op-$apa-$x.json
+        cp tru-$apa-$x.json bee/data/$x/$x-tru-$apa.json
+        cp rec-op-$apa-$x.json bee/data/$x/$x-rec-op-$apa.json
+        cp mc-$x.json bee/data/$x/$x-mc.json
         
         # Print status
         echo "Copied tru-$apa-$x.json to bee/data/$x/"
@@ -30,4 +32,4 @@ rm -f upload.zip
 cd bee
 zip -r ../upload.zip data
 cd ..
-./upload-to-bee.sh upload.zip
+/exp/sbnd/app/users/yuhw/dl-clus/script/upload-to-bee.sh upload.zip

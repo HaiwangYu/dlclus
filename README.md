@@ -12,13 +12,29 @@ DL-CLUS performs neutrino interaction clustering in LArTPC data using deep learn
 
 ## Data format
 
-reco .npz
+rec.npz
 
-points: [x, y, z, q, blob_idx]
+```python
+points: [x, y, z, q, blob_idx, cluster_idx]
 ppedges: [head, tail, dist]
 blobs: [q, ncorners, x_i, y_i, z_i, ..., x_ncorners, ...]
+ctpc_f?p? [x (drifting dist, mm),y (along wire-pitch dir, mm), charge, charge_err, channel_ident, wire_ident, time_slicing_idx]
+```
 
-truth .json
+rec-op.json
+```bash
+```
+
+truth.json
+
+```bash
+```
+
+
+rec-lab.npz
+```bash
+rec + is_nu in points
+```
 
 ## Installation
 

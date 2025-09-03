@@ -12,11 +12,11 @@ if script_dir not in sys.path:
     sys.path.insert(0, script_dir)
     
 # Configuration from lines 17-21 of the original script
-input_path = "/exp/sbnd/app/users/yuhw/dl-clus/sample/20250618/"
-output_path = "/exp/sbnd/app/users/yuhw/dl-clus/sample/20250618/"
-job_batchid = 77451011
+input_path = "/exp/sbnd/app/users/yuhw/dl-clus/sample/lynn-2025-09-02/"
+output_path = "/exp/sbnd/app/users/yuhw/dl-clus/sample/lynn-2025-09-02/"
+job_batchid = 86469392
 start_job = 0
-end_job = 99
+end_job = 0
 
 def verify_files_exist(job_folder, prefix):
     """Check if files with the given prefix exist in the job folder"""
