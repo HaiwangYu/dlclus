@@ -11,3 +11,8 @@ find /exp/sbnd/app/users/yuhw/dl-clus/sample/lynn-2025-09-08 -maxdepth 1 -name "
 
 Sim->Scan("mc_nu_ccnc:mc_nu_mode:mc_nu_intType:mc_nu_mom[3]:mc_pdg:mc_startXYZT:mc_startMomentum","mc_mother==0", "", 1, 2)
 ```
+
+
+```bash
+./script/make-bee.sh /pnfs/sbnd/persistent/users/lynnt/dl-light_samples/img-clus/23334072_0 ./tmp
+```

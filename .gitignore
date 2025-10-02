@@ -52,3 +52,4 @@ ENV/
 output/
 data/
 checkpoints/
+tmp

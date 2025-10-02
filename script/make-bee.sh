@@ -73,6 +73,8 @@ if (( sta_idx > end_idx )); then
     exit 1
 fi
 
+echo "make-bee.sh: Processing indices from $sta_idx to $end_idx"
+
 bee_dir="$output_dir/bee"
 data_dir="$bee_dir/data"
 zip_path="$output_dir/upload.zip"
@@ -81,7 +83,7 @@ rm -rf "$bee_dir"
 mkdir -p "$data_dir"
 
 for zip_name in mabc-apa0-face0.zip mabc-apa1-face1.zip; do
-    unzip -o "$input_dir/$zip_name" -d "$bee_dir"
+    unzip -oq "$input_dir/$zip_name" -d "$bee_dir"
 done
 
 for apa in apa0 apa1; do
@@ -93,14 +95,14 @@ for apa in apa0 apa1; do
         cp "$input_dir/rec-op-$apa-$x.json" "$target_dir/$x-rec-op-$apa.json"
         cp "$input_dir/mc-$x.json" "$target_dir/$x-mc.json"
 
-        echo "Copied files for $apa index $x to $target_dir/"
+        # echo "Copied files for $apa index $x to $target_dir/"
     done
 done
 
 rm -f "$zip_path"
 (
     cd "$bee_dir"
-    zip -r "$zip_path" data
+    zip -qr "$zip_path" data
 )
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
