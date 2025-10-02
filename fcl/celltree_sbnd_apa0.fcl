@@ -53,6 +53,7 @@ physics:
 }
 
 
+physics.analyzers.wirecell.outFile : "celltree_apa0.root"
 physics.analyzers.wirecell.nRawSamples : 3400
 
 physics.analyzers.wirecell.saveRaw: false 
@@ -83,7 +84,8 @@ physics.analyzers.wirecell.readout_end : 1500 # unit: us. different? End time of
 physics.analyzers.wirecell.clustering_delta_t : 25 # 25 ns. Delta t for clustering edepos
 physics.analyzers.wirecell.z_offset : 0.5 # unit: cm. Add this offset to SED z position
 physics.analyzers.wirecell.saveMC : true 
-physics.analyzers.wirecell.mcOption : "nuOnly" # "all", "nuOnly"
+physics.analyzers.wirecell.mcOption : "nuOnlyKE" # "all", "nuOnly"
+physics.analyzers.wirecell.mcKECut : 0.000 # in GeV, 0.000 = no cut
 physics.analyzers.wirecell.saveMCTrackPoints : true
 
 physics.analyzers.wirecell.processSpacePointTruthDepo_Truth : true

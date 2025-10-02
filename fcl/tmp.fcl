@@ -12,31 +12,32 @@ physics: {
       wirecell: {
          CalibLabel: "wctsp:gauss"
          DNNCalibLabel: "sptpc2d:dnnsp"
-         OpFlashLabel: "opflash"
+         OpFlashLabel: "opflashtpc0:"
          OpHitLabel: "ophit"
          RawDigitLabel: "simtpc2d:daq"
          SimChannelLabel: "simtpc2d:simpleSC"
          SimEnergyDepositLabel: "ionandscint:"
-         SpacePointLabels: [
-            "truthDepo"
-         ]
+         SpacePointLabels: []
          TriggerLabel: "daq"
          clustering_delta_t: 25
          drift_speed: 1.56
          first_cluster_id: 0
-         mcOption: "nuOnly"
+         mcKECut: 0
+         mcOption: "nuOnlyKE"
          module_type: "CellTree"
          nRawSamples: 3400
          opMultPEThresh: 5
-         outFile: "celltree.root"
-         processSpacePointTruthDepo_Particle: true
+         outFile: "celltree_apa0.root"
+         processOpFlash_json: true
+         processSpacePointTruthDepo_Truth: true
          readout_end: 1500
          readout_start: -200
          saveCalib: false
          saveDNNCalib: false
-         saveJSON: false
-         saveMC: false
-         saveMCTrackPoints: false
+         saveJSON: true
+         saveJSONinBEEFormat: false
+         saveMC: true
+         saveMCTrackPoints: true
          saveOpFlash: false
          saveOpHit: false
          saveRaw: false
@@ -56,9 +57,9 @@ process_name: "celltree"
 services: {
    ActionHolder: {}
    AuxDetGeometry: {
-      GDML: "sbnd_v02_04.gdml"
+      GDML: "sbnd_v02_05.gdml"
       Name: "sbndv2"
-      ROOT: "sbnd_v02_04.gdml"
+      ROOT: "sbnd_v02_05.gdml"
       ReadoutInitializer: {
          tool_type: "CRTAuxDetInitializerSBND"
       }
@@ -151,7 +152,19 @@ services: {
          4374,
          5231,
          10012,
-         10869
+         10869,
+         4800,
+         4801,
+         4802,
+         4803,
+         4804,
+         4805,
+         10438,
+         10439,
+         10440,
+         10441,
+         10442,
+         10443
       ]
       NoisyChannels: [
          5060,
@@ -202,7 +215,7 @@ services: {
          6.66e-1,
          8e-1
       ]
-      Electronlifetime: 100000
+      Electronlifetime: 35000
       ElectronsToADC: 6.29778e-3
       IncludeInterPlanePitchInXTickOffsets: false
       InheritNumberTimeSamples: false
@@ -223,9 +236,9 @@ services: {
    }
    Geometry: {
       DisableWiresInG4: true
-      GDML: "sbnd_v02_04.gdml"
+      GDML: "sbnd_v02_05.gdml"
       Name: "sbndv2"
-      ROOT: "sbnd_v02_04.gdml"
+      ROOT: "sbnd_v02_05.gdml"
       SortingParameters: {
          DetectorVersion: "sbnd"
          tool_type: "GeoObjectSorterSBND"
@@ -233,9 +246,19 @@ services: {
       SurfaceY: 0
    }
    GeometryConfigurationWriter: {}
+   IPMTCalibrationDatabaseService: {
+      CorrectionTags: {
+         DatabaseTimeStamp: 1.740739388e18
+         PMTCalibrationDatabaseTag: "v1r1"
+         SERLength: 550
+         TableName: "pds_calibration"
+      }
+      Verbose: false
+      service_provider: "PMTCalibrationDatabaseService"
+   }
    LArG4Detector: {
       category: "world"
-      gdmlFileName_: "sbnd_v02_04_nowires.gdml"
+      gdmlFileName_: "sbnd_v02_05_nowires.gdml"
       stepLimits: [
          3e-1,
          3e-1,

@@ -4,7 +4,7 @@ sta_idx=$1
 end_idx=$2
 
 # Create the base directory if it doesn't exist
-# rm -rf bee
+rm -rf bee
 mkdir -p bee/data
 
 unzip -o mabc-apa0-face0.zip -d bee
