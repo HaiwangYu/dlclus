@@ -1,15 +1,19 @@
 #!/bin/bash
 set -euo pipefail
 
+usage() {
+    echo "Usage: $0 <input_dir> <output_dir> [start_idx] [end_idx]" >&2
+}
+
 if [[ $# -lt 2 || $# -gt 4 ]]; then
-    echo "Usage: $0 <start_idx> <end_idx> [input_dir] [output_dir]" >&2
+    usage
     exit 1
 fi
 
-sta_idx=$1
-end_idx=$2
-input_dir=${3:-$PWD}
-output_dir=${4:-$PWD}
+input_dir=$1
+output_dir=$2
+sta_idx=${3-}
+end_idx=${4-}
 
 if [[ ! -d $input_dir ]]; then
     echo "Input directory not found: $input_dir" >&2
@@ -20,6 +24,55 @@ mkdir -p "$output_dir"
 
 input_dir=$(cd "$input_dir" && pwd)
 output_dir=$(cd "$output_dir" && pwd)
+
+if [[ -n ${sta_idx} && ! $sta_idx =~ ^[0-9]+$ ]]; then
+    echo "start_idx must be numeric: $sta_idx" >&2
+    exit 1
+fi
+
+if [[ -n ${end_idx} && ! $end_idx =~ ^[0-9]+$ ]]; then
+    echo "end_idx must be numeric: $end_idx" >&2
+    exit 1
+fi
+
+if [[ -z ${sta_idx} || -z ${end_idx} ]]; then
+    shopt -s nullglob
+    idx_candidates=()
+    for f in "$input_dir"/mc-*.json; do
+        fname=${f##*/}
+        idx=${fname%.json}
+        idx=${idx#mc-}
+        if [[ $idx =~ ^[0-9]+$ ]]; then
+            idx_candidates+=("$idx")
+        fi
+    done
+    shopt -u nullglob
+
+    if [[ ${#idx_candidates[@]} -eq 0 ]]; then
+        echo "Unable to infer indices from $input_dir" >&2
+        exit 1
+    fi
+
+    mapfile -t sorted_indices < <(printf '%s\n' "${idx_candidates[@]}" | sort -n | uniq)
+
+    if [[ -z ${sta_idx} ]]; then
+        sta_idx=${sorted_indices[0]}
+    fi
+    if [[ -z ${end_idx} ]]; then
+        end_idx=${sorted_indices[${#sorted_indices[@]}-1]}
+    fi
+fi
+
+if [[ -z ${sta_idx} || -z ${end_idx} ]]; then
+    echo "Both start_idx and end_idx could not be determined." >&2
+    exit 1
+fi
+
+if (( sta_idx > end_idx )); then
+    echo "start_idx ($sta_idx) cannot be greater than end_idx ($end_idx)" >&2
+    exit 1
+fi
+
 bee_dir="$output_dir/bee"
 data_dir="$bee_dir/data"
 zip_path="$output_dir/upload.zip"
